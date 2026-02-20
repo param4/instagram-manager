@@ -1,0 +1,24 @@
+# Compiled output
+dist/
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Environment
+.env
+
+# Test coverage
+coverage/
+
+# Debug
+npm-debug.log*
+pnpm-debug.log*
