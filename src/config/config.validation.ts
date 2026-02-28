@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsString, validateSync } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
 
 enum Environment {
   Development = 'development',
@@ -31,6 +31,27 @@ class EnvironmentVariables {
 
   @IsString()
   DB_NAME: string = 'insta_uploader';
+
+  @IsString()
+  IG_APP_ID: string;
+
+  @IsString()
+  IG_APP_SECRET: string;
+
+  @IsString()
+  IG_REDIRECT_URI: string;
+
+  @IsString()
+  @IsOptional()
+  IG_API_VERSION: string = 'v25.0';
+
+  @IsNumber()
+  @IsOptional()
+  IG_POLLING_INTERVAL_MS: number = 2000;
+
+  @IsNumber()
+  @IsOptional()
+  IG_MAX_POLLING_ATTEMPTS: number = 30;
 }
 
 export function validate(config: Record<string, unknown>) {

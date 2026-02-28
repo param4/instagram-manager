@@ -44,4 +44,28 @@ export class ConfigService {
   get dbName(): string {
     return this.configService.get<string>('DB_NAME', 'insta_uploader');
   }
+
+  get igAppId(): string {
+    return this.configService.get<string>('IG_APP_ID', '');
+  }
+
+  get igAppSecret(): string {
+    return this.configService.get<string>('IG_APP_SECRET', '');
+  }
+
+  get igRedirectUri(): string {
+    return this.configService.get<string>('IG_REDIRECT_URI', '');
+  }
+
+  get igApiVersion(): string {
+    return this.configService.get<string>('IG_API_VERSION', 'v25.0');
+  }
+
+  get igPollingIntervalMs(): number {
+    return this.configService.get<number>('IG_POLLING_INTERVAL_MS', 2000);
+  }
+
+  get igMaxPollingAttempts(): number {
+    return this.configService.get<number>('IG_MAX_POLLING_ATTEMPTS', 30);
+  }
 }

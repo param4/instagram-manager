@@ -15,6 +15,7 @@ import { ConfigService } from '../config/config.service';
         database: configService.dbName,
         autoLoadEntities: true,
         synchronize: configService.isDevelopment,
+        ssl: configService.isProduction ? { rejectUnauthorized: false } : true,
       }),
     }),
   ],
