@@ -9,6 +9,22 @@ import { InstagramOAuthService } from './instagram-oauth.service';
 import { CreatePostModel } from '../models/create-post.model';
 import { PostResponseModel } from '../models/post-response.model';
 
+/**
+ * Orchestrates Instagram post creation and lifecycle management.
+ *
+ * Coordinates between {@link InstagramOAuthService} (account/token management)
+ * and {@link InstagramApiService} (Graph API calls) to implement the full
+ * publishing flow:
+ *
+ * 1. Validate account and refresh token if needed
+ * 2. Create a media container via the Instagram API
+ * 3. Poll the container until processing completes
+ * 4. Publish the container to the user's feed
+ * 5. Track post status throughout the lifecycle
+ *
+ * Reels (video) receive 3x the polling attempts of images to account
+ * for longer server-side transcoding times.
+ */
 @Injectable()
 export class InstagramService {
   private readonly logger = new Logger(InstagramService.name);
@@ -26,6 +42,22 @@ export class InstagramService {
     this.maxPollingAttempts = configService.igMaxPollingAttempts;
   }
 
+  /**
+   * Creates and publishes an Instagram post or reel.
+   *
+   * Executes the full publishing pipeline synchronously:
+   * 1. Looks up the account and refreshes the token if near expiry
+   * 2. Creates a media container on the Instagram API
+   * 3. Polls the container until `FINISHED` (or fails on `ERROR`/`EXPIRED`)
+   * 4. Publishes the container to the user's feed
+   *
+   * The post entity is persisted at each status transition for auditability.
+   * On failure, the post is marked as `FAILED` with the error message stored.
+   *
+   * @param dto - The post creation request containing account ID, media URL, caption, and media type
+   * @returns The published post response
+   * @throws HttpException with 502 status if the Instagram API returns an error
+   */
   async createPost(dto: CreatePostModel): Promise<PostResponseModel> {
     const account = await this.instagramOAuthService.getAccount(dto.accountId);
     const refreshedAccount = await this.instagramOAuthService.refreshTokenIfNeeded(account);
@@ -84,6 +116,13 @@ export class InstagramService {
     }
   }
 
+  /**
+   * Retrieves a single post by its UUID.
+   *
+   * @param id - UUID of the post
+   * @returns The post response
+   * @throws HttpException with 404 status if the post is not found
+   */
   async getPost(id: string): Promise<PostResponseModel> {
     const post = await this.postRepository.findOneBy({ id });
     if (!post) {
@@ -92,6 +131,11 @@ export class InstagramService {
     return this.toResponse(post);
   }
 
+  /**
+   * Lists all posts ordered by creation date (newest first).
+   *
+   * @returns Array of post responses
+   */
   async listPosts(): Promise<PostResponseModel[]> {
     const posts = await this.postRepository.find({
       order: { createdAt: 'DESC' },
@@ -99,6 +143,16 @@ export class InstagramService {
     return posts.map((p) => this.toResponse(p));
   }
 
+  /**
+   * Polls the container status until it reaches `FINISHED` or a terminal error state.
+   *
+   * For reels, allows 3x the normal polling attempts to account for
+   * longer video transcoding times on Instagram's servers.
+   *
+   * @param post - The post entity (updated in-place with status changes)
+   * @param accessToken - A valid access token for polling
+   * @internal
+   */
   private async waitForContainerReady(post: InstagramPost, accessToken: string): Promise<void> {
     post.status = PostStatus.PROCESSING;
     await this.postRepository.save(post);
@@ -133,10 +187,23 @@ export class InstagramService {
     throw new Error(`Container ${post.containerId} did not finish within ${maxAttempts} attempts`);
   }
 
+  /**
+   * Delays execution for the specified duration.
+   *
+   * @param ms - Milliseconds to sleep
+   * @internal
+   */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  /**
+   * Maps an {@link InstagramPost} entity to the public API response shape.
+   *
+   * @param post - The post entity from the database
+   * @returns Sanitized post response
+   * @internal
+   */
   private toResponse(post: InstagramPost): PostResponseModel {
     return {
       id: post.id,

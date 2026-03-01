@@ -19,6 +19,9 @@ node_modules/
 # Test coverage
 coverage/
 
+# Documentation (generated)
+docs/
+
 # Debug
 npm-debug.log*
 pnpm-debug.log*

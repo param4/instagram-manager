@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/@compodoc/compodoc/src/config/schema.json",
+  "tsconfig": "./tsconfig.doc.json",
+  "output": "./docs",
+  "name": "Insta Uploader",
+  "theme": "material",
+  "hideGenerator": true,
+  "disablePrivate": false,
+  "disableInternal": true,
+  "disableLifeCycleHooks": true,
+  "disableRoutesGraph": true,
+  "disableDomTree": true,
+  "disableTemplateTab": true,
+  "disableStyleTab": true,
+  "coverageTest": false,
+  "language": "en-US"
+}

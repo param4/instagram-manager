@@ -11,6 +11,17 @@ import {
   TokenRefreshResponse,
 } from '../types/instagram.type';
 
+/**
+ * Manages Instagram OAuth authentication and account lifecycle.
+ *
+ * Implements the Instagram Login flow using the Instagram Platform API:
+ * 1. Generate authorization URL for user consent
+ * 2. Exchange authorization code for short-lived token
+ * 3. Upgrade to a 60-day long-lived token
+ * 4. Auto-refresh tokens that are within 7 days of expiry
+ *
+ * @link https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login
+ */
 @Injectable()
 export class InstagramOAuthService {
   private readonly apiBase: string;
@@ -23,6 +34,15 @@ export class InstagramOAuthService {
     this.apiBase = `https://graph.instagram.com/${config.igApiVersion}`;
   }
 
+  /**
+   * Builds the Instagram OAuth authorization URL.
+   *
+   * Constructs a URL with the configured app ID, redirect URI, and required
+   * scopes (`instagram_business_basic`, `instagram_business_content_publish`).
+   * The consumer should redirect the user to this URL to begin the OAuth flow.
+   *
+   * @returns The full Instagram OAuth authorization URL
+   */
   getAuthUrl(): string {
     const params = new URLSearchParams({
       client_id: this.config.igAppId,
@@ -33,6 +53,16 @@ export class InstagramOAuthService {
     return `https://api.instagram.com/oauth/authorize?${params.toString()}`;
   }
 
+  /**
+   * Exchanges an authorization code for a long-lived access token.
+   *
+   * Performs a two-step token exchange:
+   * 1. Exchanges the authorization code for a short-lived token (valid ~1 hour)
+   * 2. Upgrades the short-lived token to a long-lived token (valid ~60 days)
+   *
+   * @param code - The authorization code received from Instagram's OAuth redirect
+   * @returns Object containing the Instagram user ID, access token, and expiration date
+   */
   async exchangeCodeForToken(
     code: string,
   ): Promise<{ igUserId: string; accessToken: string; expiresAt: Date }> {
@@ -85,6 +115,15 @@ export class InstagramOAuthService {
     };
   }
 
+  /**
+   * Fetches the authenticated user's Instagram profile.
+   *
+   * Calls the `GET /me` endpoint with fields: `id`, `username`, `name`,
+   * and `profile_picture_url`.
+   *
+   * @param accessToken - A valid Instagram access token
+   * @returns The user's Instagram profile data
+   */
   async getProfile(accessToken: string): Promise<InstagramUserProfile> {
     const params = new URLSearchParams({
       fields: 'id,username,name,profile_picture_url',
@@ -101,6 +140,18 @@ export class InstagramOAuthService {
     return data;
   }
 
+  /**
+   * Creates or updates an Instagram account record.
+   *
+   * If an account with the same `igUserId` already exists, updates its
+   * profile data, access token, and reactivates it. Otherwise, creates
+   * a new account record.
+   *
+   * @param profile - The user's Instagram profile from the API
+   * @param accessToken - The long-lived access token
+   * @param expiresAt - When the access token expires
+   * @returns The persisted account entity
+   */
   async upsertAccount(
     profile: InstagramUserProfile,
     accessToken: string,
@@ -133,6 +184,16 @@ export class InstagramOAuthService {
     return this.accountRepo.save(account);
   }
 
+  /**
+   * Refreshes the access token if it is within 7 days of expiry.
+   *
+   * Calls the Instagram `ig_refresh_token` endpoint to obtain a new
+   * 60-day token. If the token is not near expiry, returns the account
+   * unchanged.
+   *
+   * @param account - The account whose token to check and potentially refresh
+   * @returns The account with an up-to-date token
+   */
   async refreshTokenIfNeeded(account: InstagramAccount): Promise<InstagramAccount> {
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     const isNearExpiry = account.tokenExpiresAt.getTime() - Date.now() < sevenDaysMs;
@@ -160,6 +221,13 @@ export class InstagramOAuthService {
     return this.accountRepo.save(account);
   }
 
+  /**
+   * Retrieves an active Instagram account by its UUID.
+   *
+   * @param id - UUID of the account
+   * @returns The active account entity
+   * @throws NotFoundException if no active account matches the given ID
+   */
   async getAccount(id: string): Promise<InstagramAccount> {
     const account = await this.accountRepo.findOne({ where: { id, isActive: true } });
     if (!account) {
@@ -168,10 +236,23 @@ export class InstagramOAuthService {
     return account;
   }
 
+  /**
+   * Lists all active Instagram accounts.
+   *
+   * @returns Array of active account entities
+   */
   async listAccounts(): Promise<InstagramAccount[]> {
     return this.accountRepo.find({ where: { isActive: true } });
   }
 
+  /**
+   * Soft-deletes an Instagram account by setting `isActive` to `false`.
+   *
+   * The account record remains in the database for audit purposes.
+   *
+   * @param id - UUID of the account to deactivate
+   * @throws NotFoundException if no active account matches the given ID
+   */
   async deactivateAccount(id: string): Promise<void> {
     const account = await this.getAccount(id);
     account.isActive = false;

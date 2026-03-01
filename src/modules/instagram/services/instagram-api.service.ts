@@ -8,6 +8,17 @@ import {
   MediaType,
 } from '../types/instagram.type';
 
+/**
+ * Low-level HTTP client for the Instagram Graph API content publishing endpoints.
+ *
+ * Wraps the three-step container-based publishing flow:
+ * 1. {@link createMediaContainer} — Create a media container (image or reel)
+ * 2. {@link getContainerStatus} — Poll container processing status
+ * 3. {@link publishContainer} — Publish the finished container to the user's feed
+ *
+ * This service handles only HTTP transport and error detection. Business logic
+ * (polling loops, status tracking, error recovery) lives in {@link InstagramService}.
+ */
 @Injectable()
 export class InstagramApiService {
   private readonly logger = new Logger(InstagramApiService.name);
@@ -17,6 +28,21 @@ export class InstagramApiService {
     this.baseUrl = `https://graph.instagram.com/${configService.igApiVersion}`;
   }
 
+  /**
+   * Creates a media container on the Instagram API.
+   *
+   * For images, sets `image_url` on the container. For reels, sets `video_url`
+   * and `media_type=REELS`. The container enters a processing pipeline on
+   * Instagram's servers and must be polled via {@link getContainerStatus}
+   * before it can be published.
+   *
+   * @param igUserId - The Instagram user ID that owns the media
+   * @param accessToken - A valid access token for the user
+   * @param mediaUrl - Publicly accessible URL of the image or video
+   * @param mediaType - Whether this is an image or a reel
+   * @param caption - Optional caption text for the post
+   * @returns The created container with its ID
+   */
   async createMediaContainer(
     igUserId: string,
     accessToken: string,
@@ -52,6 +78,19 @@ export class InstagramApiService {
     return data as CreateContainerResponse;
   }
 
+  /**
+   * Polls the processing status of a media container.
+   *
+   * Returns the current `status_code` which can be:
+   * - `IN_PROGRESS` — Still processing (keep polling)
+   * - `FINISHED` — Ready to publish
+   * - `ERROR` — Processing failed permanently
+   * - `EXPIRED` — Container expired before publishing
+   *
+   * @param accessToken - A valid access token
+   * @param containerId - The container ID returned from {@link createMediaContainer}
+   * @returns The container's current status
+   */
   async getContainerStatus(
     accessToken: string,
     containerId: string,
@@ -74,6 +113,17 @@ export class InstagramApiService {
     return data as ContainerStatusResponse;
   }
 
+  /**
+   * Publishes a finished media container to the user's Instagram feed.
+   *
+   * This is the final step in the publishing flow. The container must
+   * have a `FINISHED` status before calling this method.
+   *
+   * @param igUserId - The Instagram user ID that owns the media
+   * @param accessToken - A valid access token for the user
+   * @param containerId - The finished container ID to publish
+   * @returns The published media with its Instagram media ID
+   */
   async publishContainer(
     igUserId: string,
     accessToken: string,
