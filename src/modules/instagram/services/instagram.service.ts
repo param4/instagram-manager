@@ -1,4 +1,4 @@
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@config/config.service';
@@ -8,6 +8,7 @@ import { InstagramApiService } from './instagram-api.service';
 import { InstagramOAuthService } from './instagram-oauth.service';
 import { CreatePostModel } from '../models/create-post.model';
 import { PostResponseModel } from '../models/post-response.model';
+import { AsyncUtil } from '@common/utils/async.util';
 
 /**
  * Orchestrates Instagram post creation and lifecycle management.
@@ -126,7 +127,7 @@ export class InstagramService {
   async getPost(id: string): Promise<PostResponseModel> {
     const post = await this.postRepository.findOneBy({ id });
     if (!post) {
-      throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Post ${id} not found`);
     }
     return this.toResponse(post);
   }
@@ -181,20 +182,10 @@ export class InstagramService {
         );
       }
 
-      await this.sleep(this.pollingIntervalMs);
+      await AsyncUtil.sleep(this.pollingIntervalMs);
     }
 
     throw new Error(`Container ${post.containerId} did not finish within ${maxAttempts} attempts`);
-  }
-
-  /**
-   * Delays execution for the specified duration.
-   *
-   * @param ms - Milliseconds to sleep
-   * @internal
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

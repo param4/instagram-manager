@@ -23,9 +23,6 @@ export class AccountResponseModel {
   /** When the current access token expires */
   tokenExpiresAt: Date;
 
-  /** Whether the account is currently active */
-  isActive: boolean;
-
   /** When the account was first connected */
   createdAt: Date;
 }

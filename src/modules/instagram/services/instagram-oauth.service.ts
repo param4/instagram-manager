@@ -54,6 +54,19 @@ export class InstagramOAuthService {
   }
 
   /**
+   * Completes the full OAuth flow: exchanges the code, fetches the profile,
+   * and upserts the account in the database.
+   *
+   * @param code - The authorization code from Instagram's OAuth redirect
+   * @returns The connected (or updated) Instagram account entity
+   */
+  async connectAccount(code: string): Promise<InstagramAccount> {
+    const { accessToken, expiresAt } = await this.exchangeCodeForToken(code);
+    const profile = await this.getProfile(accessToken);
+    return this.upsertAccount(profile, accessToken, expiresAt);
+  }
+
+  /**
    * Exchanges an authorization code for a long-lived access token.
    *
    * Performs a two-step token exchange:
@@ -143,9 +156,10 @@ export class InstagramOAuthService {
   /**
    * Creates or updates an Instagram account record.
    *
-   * If an account with the same `igUserId` already exists, updates its
-   * profile data, access token, and reactivates it. Otherwise, creates
-   * a new account record.
+   * Searches with `withDeleted: true` so previously disconnected accounts
+   * can be found and restored. If the account exists (even soft-deleted),
+   * updates its profile data, token, and clears `deletedAt` to restore it.
+   * Otherwise, creates a new record.
    *
    * @param profile - The user's Instagram profile from the API
    * @param accessToken - The long-lived access token
@@ -159,6 +173,7 @@ export class InstagramOAuthService {
   ): Promise<InstagramAccount> {
     const existing = await this.accountRepo.findOne({
       where: { igUserId: profile.id },
+      withDeleted: true,
     });
 
     if (existing) {
@@ -167,7 +182,7 @@ export class InstagramOAuthService {
       existing.profilePictureUrl = profile.profile_picture_url ?? null;
       existing.accessToken = accessToken;
       existing.tokenExpiresAt = expiresAt;
-      existing.isActive = true;
+      existing.deletedAt = null;
       return this.accountRepo.save(existing);
     }
 
@@ -178,7 +193,6 @@ export class InstagramOAuthService {
       profilePictureUrl: profile.profile_picture_url ?? null,
       accessToken,
       tokenExpiresAt: expiresAt,
-      isActive: true,
     });
 
     return this.accountRepo.save(account);
@@ -222,14 +236,17 @@ export class InstagramOAuthService {
   }
 
   /**
-   * Retrieves an active Instagram account by its UUID.
+   * Retrieves an Instagram account by its UUID.
+   *
+   * TypeORM automatically excludes soft-deleted rows (`deletedAt IS NOT NULL`),
+   * so only active accounts are returned.
    *
    * @param id - UUID of the account
-   * @returns The active account entity
+   * @returns The account entity
    * @throws NotFoundException if no active account matches the given ID
    */
   async getAccount(id: string): Promise<InstagramAccount> {
-    const account = await this.accountRepo.findOne({ where: { id, isActive: true } });
+    const account = await this.accountRepo.findOne({ where: { id } });
     if (!account) {
       throw new NotFoundException(`Instagram account ${id} not found`);
     }
@@ -239,23 +256,26 @@ export class InstagramOAuthService {
   /**
    * Lists all active Instagram accounts.
    *
+   * TypeORM automatically excludes soft-deleted rows, so only
+   * accounts with `deletedAt = null` are returned.
+   *
    * @returns Array of active account entities
    */
   async listAccounts(): Promise<InstagramAccount[]> {
-    return this.accountRepo.find({ where: { isActive: true } });
+    return this.accountRepo.find();
   }
 
   /**
-   * Soft-deletes an Instagram account by setting `isActive` to `false`.
+   * Soft-deletes an Instagram account using TypeORM's `@DeleteDateColumn`.
    *
-   * The account record remains in the database for audit purposes.
+   * Sets `deletedAt` to the current timestamp. The account record remains
+   * in the database for audit purposes but is excluded from standard queries.
    *
    * @param id - UUID of the account to deactivate
    * @throws NotFoundException if no active account matches the given ID
    */
   async deactivateAccount(id: string): Promise<void> {
     const account = await this.getAccount(id);
-    account.isActive = false;
-    await this.accountRepo.save(account);
+    await this.accountRepo.softRemove(account);
   }
 }

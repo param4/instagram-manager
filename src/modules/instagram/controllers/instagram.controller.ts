@@ -20,7 +20,7 @@ import { PostResponseModel } from '../models/post-response.model';
 import { AccountResponseModel } from '../models/account-response.model';
 import { ConnectResponseModel } from '../models/connect-response.model';
 import { InstagramAccount } from '../entities/instagram-account.entity';
-import { MediaType } from '../types/instagram.type';
+import { MediaType, MediaTypeLabel } from '../types/instagram.type';
 
 /**
  * Handles all Instagram-related HTTP endpoints.
@@ -66,9 +66,8 @@ export class InstagramController {
   /**
    * Handles the OAuth callback from Instagram.
    *
-   * Receives the authorization code, exchanges it for a long-lived token,
-   * fetches the user profile, and upserts the account in the database.
-   * If the account already exists, its token and profile data are refreshed.
+   * Delegates the full connect flow (token exchange, profile fetch, upsert)
+   * to {@link InstagramOAuthService.connectAccount}.
    *
    * @param code - The authorization code provided by Instagram
    * @returns The connected Instagram account details
@@ -83,10 +82,7 @@ export class InstagramController {
       throw new HttpException('Missing OAuth code', HttpStatus.BAD_REQUEST);
     }
 
-    const { accessToken, expiresAt } = await this.instagramOAuthService.exchangeCodeForToken(code);
-
-    const profile = await this.instagramOAuthService.getProfile(accessToken);
-    const account = await this.instagramOAuthService.upsertAccount(profile, accessToken, expiresAt);
+    const account = await this.instagramOAuthService.connectAccount(code);
 
     return {
       success: true,
@@ -169,7 +165,7 @@ export class InstagramController {
   @ApiResponse({ status: 502, description: 'Instagram API error during publishing' })
   async createPost(@Body() dto: CreatePostModel): Promise<AppApiResponse<PostResponseModel>> {
     const post = await this.instagramService.createPost(dto);
-    const typeLabel = dto.mediaType === MediaType.REELS ? 'reel' : 'post';
+    const typeLabel = MediaTypeLabel[dto.mediaType ?? MediaType.IMAGE];
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
@@ -238,7 +234,6 @@ export class InstagramController {
       name: account.name,
       profilePictureUrl: account.profilePictureUrl,
       tokenExpiresAt: account.tokenExpiresAt,
-      isActive: account.isActive,
       createdAt: account.createdAt,
     };
   }

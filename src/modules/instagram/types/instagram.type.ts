@@ -26,6 +26,12 @@ export enum MediaType {
   REELS = 'reels',
 }
 
+/** Human-readable label for each {@link MediaType}, used in API response messages */
+export const MediaTypeLabel: Record<MediaType, string> = {
+  [MediaType.IMAGE]: 'post',
+  [MediaType.REELS]: 'reel',
+};
+
 /** Possible `status_code` values returned by the Instagram container status endpoint */
 export type ContainerStatusCode = 'EXPIRED' | 'ERROR' | 'FINISHED' | 'IN_PROGRESS' | 'PUBLISHED';
 

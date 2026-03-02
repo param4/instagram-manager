@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -13,8 +14,9 @@ import {
  * Instagram Login flow. Each record corresponds to one Instagram
  * user who has authorized this application.
  *
- * Soft-deletion is used: setting {@link isActive} to `false`
- * hides the account from queries without removing the record.
+ * Uses TypeORM's `@DeleteDateColumn` for soft-deletion. Standard
+ * `find()` queries automatically exclude soft-deleted rows.
+ * Use `{ withDeleted: true }` to include them.
  */
 @Entity('instagram_accounts')
 export class InstagramAccount {
@@ -46,13 +48,13 @@ export class InstagramAccount {
   @Column({ type: 'timestamptz' })
   tokenExpiresAt: Date;
 
-  /** Whether this account is active. `false` indicates soft-deletion */
-  @Column({ default: true })
-  isActive: boolean;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  /** Set by TypeORM on soft-delete. `null` when account is active */
+  @DeleteDateColumn()
+  deletedAt: Date | null;
 }
