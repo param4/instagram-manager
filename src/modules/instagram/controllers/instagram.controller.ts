@@ -12,6 +12,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Public } from '@common/decorators/public.decorator';
 import { InstagramService } from '../services/instagram.service';
 import { InstagramOAuthService } from '../services/instagram-oauth.service';
 import { CreatePostModel } from '../models/create-post.model';
@@ -50,6 +51,7 @@ export class InstagramController {
    *
    * @returns Response containing the OAuth authorization URL
    */
+  @Public()
   @Get('auth/connect')
   @ApiOperation({ summary: 'Get Instagram OAuth URL' })
   @ApiResponse({ status: 200, description: 'OAuth URL generated successfully' })
@@ -72,6 +74,7 @@ export class InstagramController {
    * @param code - The authorization code provided by Instagram
    * @returns The connected Instagram account details
    */
+  @Public()
   @Get('auth/callback')
   @ApiOperation({ summary: 'Handle Instagram OAuth callback' })
   @ApiQuery({ name: 'code', description: 'Authorization code from Instagram redirect' })

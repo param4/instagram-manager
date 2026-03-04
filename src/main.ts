@@ -24,6 +24,8 @@ async function bootstrap() {
     .setTitle('Insta Uploader')
     .setDescription('Instagram content publishing API')
     .setVersion('1.0')
+    .addBearerAuth()
+    .addTag('auth', 'Authentication and authorization')
     .addTag('instagram', 'Instagram OAuth, accounts, and post publishing')
     .build();
 

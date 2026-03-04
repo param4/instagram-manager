@@ -68,4 +68,63 @@ export class ConfigService {
   get igMaxPollingAttempts(): number {
     return this.configService.get<number>('IG_MAX_POLLING_ATTEMPTS', 30);
   }
+
+  // ── Auth ─────────────────────────────────────────────────────────────
+
+  get authProvider(): string {
+    return this.configService.get<string>('AUTH_PROVIDER', '');
+  }
+
+  get authRequireMfa(): boolean {
+    return this.configService.get<string>('AUTH_REQUIRE_MFA', 'false') === 'true';
+  }
+
+  // Auth0
+  get auth0Domain(): string {
+    return this.configService.get<string>('AUTH0_DOMAIN', '');
+  }
+
+  get auth0Audience(): string {
+    return this.configService.get<string>('AUTH0_AUDIENCE', '');
+  }
+
+  get auth0Namespace(): string {
+    return this.configService.get<string>('AUTH0_NAMESPACE', '') || `https://${this.auth0Domain}`;
+  }
+
+  // Clerk
+  get clerkSecretKey(): string {
+    return this.configService.get<string>('CLERK_SECRET_KEY', '');
+  }
+
+  get clerkPublishableKey(): string {
+    return this.configService.get<string>('CLERK_PUBLISHABLE_KEY', '');
+  }
+
+  // WorkOS
+  get workosApiKey(): string {
+    return this.configService.get<string>('WORKOS_API_KEY', '');
+  }
+
+  get workosClientId(): string {
+    return this.configService.get<string>('WORKOS_CLIENT_ID', '');
+  }
+
+  // Stytch
+  get stytchProjectId(): string {
+    return this.configService.get<string>('STYTCH_PROJECT_ID', '');
+  }
+
+  get stytchSecret(): string {
+    return this.configService.get<string>('STYTCH_SECRET', '');
+  }
+
+  // Zitadel
+  get zitadelDomain(): string {
+    return this.configService.get<string>('ZITADEL_DOMAIN', '');
+  }
+
+  get zitadelProjectId(): string {
+    return this.configService.get<string>('ZITADEL_PROJECT_ID', '');
+  }
 }

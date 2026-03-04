@@ -1,5 +1,13 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, ValidateIf, validateSync } from 'class-validator';
+
+enum AuthProviderEnum {
+  AUTH0 = 'auth0',
+  CLERK = 'clerk',
+  WORKOS = 'workos',
+  STYTCH = 'stytch',
+  ZITADEL = 'zitadel',
+}
 
 enum Environment {
   Development = 'development',
@@ -52,6 +60,64 @@ class EnvironmentVariables {
   @IsNumber()
   @IsOptional()
   IG_MAX_POLLING_ATTEMPTS: number = 30;
+
+  // ── Auth ─────────────────────────────────────────────────────────────
+
+  @IsEnum(AuthProviderEnum)
+  AUTH_PROVIDER: AuthProviderEnum;
+
+  @IsString()
+  @IsOptional()
+  AUTH_REQUIRE_MFA: string = 'false';
+
+  // Auth0
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.AUTH0)
+  @IsString()
+  AUTH0_DOMAIN: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.AUTH0)
+  @IsString()
+  AUTH0_AUDIENCE: string;
+
+  @IsString()
+  @IsOptional()
+  AUTH0_NAMESPACE: string = '';
+
+  // Clerk
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.CLERK)
+  @IsString()
+  CLERK_SECRET_KEY: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.CLERK)
+  @IsString()
+  CLERK_PUBLISHABLE_KEY: string;
+
+  // WorkOS
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.WORKOS)
+  @IsString()
+  WORKOS_API_KEY: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.WORKOS)
+  @IsString()
+  WORKOS_CLIENT_ID: string;
+
+  // Stytch
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.STYTCH)
+  @IsString()
+  STYTCH_PROJECT_ID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.STYTCH)
+  @IsString()
+  STYTCH_SECRET: string;
+
+  // Zitadel
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.ZITADEL)
+  @IsString()
+  ZITADEL_DOMAIN: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.ZITADEL)
+  @IsString()
+  ZITADEL_PROJECT_ID: string;
 }
 
 export function validate(config: Record<string, unknown>) {
