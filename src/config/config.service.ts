@@ -69,6 +69,20 @@ export class ConfigService {
     return this.configService.get<number>('IG_MAX_POLLING_ATTEMPTS', 30);
   }
 
+  // ── YouTube ──────────────────────────────────────────────────────────
+
+  get ytClientId(): string {
+    return this.configService.get<string>('YT_CLIENT_ID', '');
+  }
+
+  get ytClientSecret(): string {
+    return this.configService.get<string>('YT_CLIENT_SECRET', '');
+  }
+
+  get ytRedirectUri(): string {
+    return this.configService.get<string>('YT_REDIRECT_URI', '');
+  }
+
   // ── Auth ─────────────────────────────────────────────────────────────
 
   get authProvider(): string {

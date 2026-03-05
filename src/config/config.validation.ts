@@ -61,6 +61,17 @@ class EnvironmentVariables {
   @IsOptional()
   IG_MAX_POLLING_ATTEMPTS: number = 30;
 
+  // ── YouTube ─────────────────────────────────────────────────────────
+
+  @IsString()
+  YT_CLIENT_ID: string;
+
+  @IsString()
+  YT_CLIENT_SECRET: string;
+
+  @IsString()
+  YT_REDIRECT_URI: string;
+
   // ── Auth ─────────────────────────────────────────────────────────────
 
   @IsEnum(AuthProviderEnum)

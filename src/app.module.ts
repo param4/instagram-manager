@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { InstagramModule } from './modules/instagram/instagram.module';
+import { YouTubeModule } from './modules/youtube/youtube.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { InstagramModule } from './modules/instagram/instagram.module';
     HealthModule,
     // --- Add new feature modules below this line ---
     InstagramModule,
+    YouTubeModule,
   ],
 })
 export class AppModule {}

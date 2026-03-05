@@ -27,6 +27,7 @@ async function bootstrap() {
     .addBearerAuth()
     .addTag('auth', 'Authentication and authorization')
     .addTag('instagram', 'Instagram OAuth, accounts, and post publishing')
+    .addTag('youtube', 'YouTube OAuth, channels, and video uploads')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
