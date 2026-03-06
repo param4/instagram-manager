@@ -9,6 +9,11 @@ enum AuthProviderEnum {
   ZITADEL = 'zitadel',
 }
 
+enum StorageProviderEnum {
+  R2 = 'r2',
+  S3 = 's3',
+}
+
 enum Environment {
   Development = 'development',
   Production = 'production',
@@ -129,6 +134,54 @@ class EnvironmentVariables {
   @ValidateIf((o: EnvironmentVariables) => o.AUTH_PROVIDER === AuthProviderEnum.ZITADEL)
   @IsString()
   ZITADEL_PROJECT_ID: string;
+
+  // ── Storage ─────────────────────────────────────────────────────────
+
+  @IsEnum(StorageProviderEnum)
+  @IsOptional()
+  STORAGE_PROVIDER: StorageProviderEnum;
+
+  // Cloudflare R2
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.R2)
+  @IsString()
+  R2_ACCOUNT_ID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.R2)
+  @IsString()
+  R2_ACCESS_KEY_ID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.R2)
+  @IsString()
+  R2_SECRET_ACCESS_KEY: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.R2)
+  @IsString()
+  R2_BUCKET_NAME: string;
+
+  @IsString()
+  @IsOptional()
+  R2_PUBLIC_URL: string = '';
+
+  // AWS S3
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.S3)
+  @IsString()
+  S3_REGION: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.S3)
+  @IsString()
+  S3_ACCESS_KEY_ID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.S3)
+  @IsString()
+  S3_SECRET_ACCESS_KEY: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.STORAGE_PROVIDER === StorageProviderEnum.S3)
+  @IsString()
+  S3_BUCKET_NAME: string;
+
+  @IsString()
+  @IsOptional()
+  S3_PUBLIC_URL: string = '';
 }
 
 export function validate(config: Record<string, unknown>) {

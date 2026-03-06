@@ -141,4 +141,52 @@ export class ConfigService {
   get zitadelProjectId(): string {
     return this.configService.get<string>('ZITADEL_PROJECT_ID', '');
   }
+
+  // ── Storage ────────────────────────────────────────────────────────
+
+  get storageProvider(): string {
+    return this.configService.get<string>('STORAGE_PROVIDER', '');
+  }
+
+  // Cloudflare R2
+  get r2AccountId(): string {
+    return this.configService.get<string>('R2_ACCOUNT_ID', '');
+  }
+
+  get r2AccessKeyId(): string {
+    return this.configService.get<string>('R2_ACCESS_KEY_ID', '');
+  }
+
+  get r2SecretAccessKey(): string {
+    return this.configService.get<string>('R2_SECRET_ACCESS_KEY', '');
+  }
+
+  get r2BucketName(): string {
+    return this.configService.get<string>('R2_BUCKET_NAME', '');
+  }
+
+  get r2PublicUrl(): string {
+    return this.configService.get<string>('R2_PUBLIC_URL', '');
+  }
+
+  // AWS S3
+  get s3Region(): string {
+    return this.configService.get<string>('S3_REGION', '');
+  }
+
+  get s3AccessKeyId(): string {
+    return this.configService.get<string>('S3_ACCESS_KEY_ID', '');
+  }
+
+  get s3SecretAccessKey(): string {
+    return this.configService.get<string>('S3_SECRET_ACCESS_KEY', '');
+  }
+
+  get s3BucketName(): string {
+    return this.configService.get<string>('S3_BUCKET_NAME', '');
+  }
+
+  get s3PublicUrl(): string {
+    return this.configService.get<string>('S3_PUBLIC_URL', '');
+  }
 }

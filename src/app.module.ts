@@ -14,12 +14,14 @@ import { TeamsModule } from './modules/teams/teams.module';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 import { InstagramModule } from './modules/instagram/instagram.module';
 import { YouTubeModule } from './modules/youtube/youtube.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
     ConfigModule,
     CommonModule,
     DatabaseModule,
+    StorageModule,
     AuthModule,
     // B2B Authorization — order matters for guard chain
     BusinessContextModule, // Must be AFTER AuthModule (BusinessContextGuard needs request.user)
