@@ -1,7 +1,17 @@
 import { Injectable, Logger, UnauthorizedException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@config/config.service';
 import { AuthProviderInterface } from './auth-provider.interface';
-import { VerifyTokenResult, RefreshTokenResult, UserInfo, AuthUser } from '../types/auth.type';
+import {
+  VerifyTokenResult,
+  RefreshTokenResult,
+  UserInfo,
+  AuthUser,
+  CreateUserParams,
+  CreateUserResult,
+  UpdateUserParams,
+  LoginParams,
+  LoginResult,
+} from '../types/auth.type';
 
 /** Minimal JWKS signing key shape for lazy-loaded jwks-rsa */
 interface JwksSigningKey {
@@ -37,7 +47,9 @@ export class Auth0Provider implements AuthProviderInterface {
   private jwtDecode: JwtDecodeFn | null = null;
 
   readonly supportsRefresh = false;
+  readonly supportsLogin = false;
   readonly supportsMfaClaims = true;
+  readonly supportsUserManagement = true;
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -67,6 +79,10 @@ export class Auth0Provider implements AuthProviderInterface {
     };
   }
 
+  async login(_params: LoginParams): Promise<LoginResult> {
+    throw new NotImplementedException('Login is not supported by this provider');
+  }
+
   refreshToken(): Promise<RefreshTokenResult> {
     return Promise.reject(
       new NotImplementedException('Auth0 token refresh is handled client-side'),
@@ -94,6 +110,56 @@ export class Auth0Provider implements AuthProviderInterface {
       mfaEnabled: false,
       metadata: data,
     };
+  }
+
+  async createUser(params: CreateUserParams): Promise<CreateUserResult> {
+    const domain = this.configService.auth0Domain;
+    const res = await fetch(`https://${domain}/api/v2/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: params.email,
+        name: params.name,
+        password: params.password ?? `Temp${Date.now()}!Aa`,
+        connection: 'Username-Password-Authentication',
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Auth0 user creation failed: ${body}`);
+    }
+    const data = (await res.json()) as Record<string, unknown>;
+    return { authProviderId: data.user_id as string };
+  }
+
+  async deleteUser(authProviderId: string): Promise<void> {
+    const domain = this.configService.auth0Domain;
+    const res = await fetch(
+      `https://${domain}/api/v2/users/${encodeURIComponent(authProviderId)}`,
+      { method: 'DELETE' },
+    );
+    if (!res.ok && res.status !== 204) {
+      throw new Error(`Auth0 user deletion failed: ${res.statusText}`);
+    }
+  }
+
+  async updateUser(authProviderId: string, params: UpdateUserParams): Promise<void> {
+    const domain = this.configService.auth0Domain;
+    const body: Record<string, unknown> = {};
+    if (params.name) body.name = params.name;
+    if (params.email) body.email = params.email;
+
+    const res = await fetch(
+      `https://${domain}/api/v2/users/${encodeURIComponent(authProviderId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      },
+    );
+    if (!res.ok) {
+      throw new Error(`Auth0 user update failed: ${res.statusText}`);
+    }
   }
 
   private normalizeUser(payload: Record<string, unknown>): AuthUser {

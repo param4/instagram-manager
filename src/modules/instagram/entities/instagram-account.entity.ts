@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -23,6 +24,11 @@ export class InstagramAccount {
   /** Internal UUID primary key */
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  /** Business that owns this Instagram account */
+  @Column({ type: 'varchar', name: 'business_id', nullable: true })
+  @Index()
+  businessId: string | null;
 
   /** Instagram user ID from the platform (unique per account) */
   @Column({ unique: true })

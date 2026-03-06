@@ -1,7 +1,17 @@
 import { Injectable, Logger, UnauthorizedException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@config/config.service';
 import { AuthProviderInterface } from './auth-provider.interface';
-import { VerifyTokenResult, RefreshTokenResult, UserInfo, AuthUser } from '../types/auth.type';
+import {
+  VerifyTokenResult,
+  RefreshTokenResult,
+  UserInfo,
+  AuthUser,
+  CreateUserParams,
+  CreateUserResult,
+  UpdateUserParams,
+  LoginParams,
+  LoginResult,
+} from '../types/auth.type';
 
 @Injectable()
 export class ZitadelProvider implements AuthProviderInterface {
@@ -9,9 +19,15 @@ export class ZitadelProvider implements AuthProviderInterface {
   private jwks: ReturnType<typeof import('jose').createRemoteJWKSet> | null = null;
 
   readonly supportsRefresh = false;
+  readonly supportsLogin = false;
   readonly supportsMfaClaims = true;
+  readonly supportsUserManagement = false;
 
   constructor(private readonly configService: ConfigService) {}
+
+  async login(_params: LoginParams): Promise<LoginResult> {
+    throw new NotImplementedException('Login is not supported by this provider');
+  }
 
   async verifyToken(token: string): Promise<VerifyTokenResult> {
     await this.ensureInitialized();
@@ -62,6 +78,24 @@ export class ZitadelProvider implements AuthProviderInterface {
       mfaEnabled: false,
       metadata: data,
     };
+  }
+
+  createUser(_params: CreateUserParams): Promise<CreateUserResult> {
+    throw new NotImplementedException(
+      'Zitadel user management requires the Zitadel Management API — not yet implemented',
+    );
+  }
+
+  deleteUser(_authProviderId: string): Promise<void> {
+    throw new NotImplementedException(
+      'Zitadel user management requires the Zitadel Management API — not yet implemented',
+    );
+  }
+
+  updateUser(_authProviderId: string, _params: UpdateUserParams): Promise<void> {
+    throw new NotImplementedException(
+      'Zitadel user management requires the Zitadel Management API — not yet implemented',
+    );
   }
 
   private normalizeUser(payload: Record<string, unknown>): AuthUser {

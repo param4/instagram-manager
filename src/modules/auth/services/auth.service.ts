@@ -1,6 +1,15 @@
 import { Injectable, Inject, Logger, NotImplementedException } from '@nestjs/common';
 import { AuthProviderInterface, AUTH_PROVIDER_TOKEN } from '../providers/auth-provider.interface';
-import { VerifyTokenResult, RefreshTokenResult, UserInfo } from '../types/auth.type';
+import {
+  VerifyTokenResult,
+  RefreshTokenResult,
+  UserInfo,
+  CreateUserParams,
+  CreateUserResult,
+  UpdateUserParams,
+  LoginParams,
+  LoginResult,
+} from '../types/auth.type';
 
 /**
  * Authentication orchestration service.
@@ -45,5 +54,50 @@ export class AuthService {
   /** Whether the current provider includes MFA claims in JWTs */
   get supportsMfaClaims(): boolean {
     return this.authProvider.supportsMfaClaims;
+  }
+
+  /** Whether the current provider supports user management operations */
+  get supportsUserManagement(): boolean {
+    return this.authProvider.supportsUserManagement;
+  }
+
+  /** Authenticates a user with identifier and password */
+  async login(params: LoginParams): Promise<LoginResult> {
+    if (!this.authProvider.supportsLogin) {
+      throw new NotImplementedException(
+        'Login is not supported by the current auth provider',
+      );
+    }
+    return this.authProvider.login(params);
+  }
+
+  /** Creates a user in the auth provider */
+  async createUser(params: CreateUserParams): Promise<CreateUserResult> {
+    if (!this.authProvider.supportsUserManagement) {
+      throw new NotImplementedException(
+        'User management is not supported by the current auth provider',
+      );
+    }
+    return this.authProvider.createUser(params);
+  }
+
+  /** Deletes a user from the auth provider */
+  async deleteUser(authProviderId: string): Promise<void> {
+    if (!this.authProvider.supportsUserManagement) {
+      throw new NotImplementedException(
+        'User management is not supported by the current auth provider',
+      );
+    }
+    return this.authProvider.deleteUser(authProviderId);
+  }
+
+  /** Updates a user in the auth provider */
+  async updateUser(authProviderId: string, params: UpdateUserParams): Promise<void> {
+    if (!this.authProvider.supportsUserManagement) {
+      throw new NotImplementedException(
+        'User management is not supported by the current auth provider',
+      );
+    }
+    return this.authProvider.updateUser(authProviderId, params);
   }
 }

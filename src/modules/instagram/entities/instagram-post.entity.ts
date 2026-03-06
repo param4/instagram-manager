@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -24,6 +25,11 @@ export class InstagramPost {
   /** Internal UUID primary key */
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  /** Business that owns this Instagram post */
+  @Column({ type: 'varchar', name: 'business_id', nullable: true })
+  @Index()
+  businessId: string | null;
 
   /** Whether this is an image post or a reel (video) */
   @Column({ type: 'varchar', length: 50 })

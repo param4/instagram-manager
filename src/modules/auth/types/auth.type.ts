@@ -58,6 +58,41 @@ export type RefreshTokenResult = {
   expiresAt: number;
 };
 
+/** Parameters for creating a user in the auth provider */
+export type CreateUserParams = {
+  email: string;
+  name: string;
+  password?: string;
+  username?: string;
+  phoneNumber?: string;
+  metadata?: Record<string, unknown>;
+};
+
+/** Parameters for logging in via an auth provider */
+export type LoginParams = {
+  identifier: string;
+  password: string;
+};
+
+/** Result of a successful login */
+export type LoginResult = {
+  token: string;
+  userId: string;
+  expiresAt: number;
+};
+
+/** Parameters for updating a user in the auth provider */
+export type UpdateUserParams = {
+  name?: string;
+  email?: string;
+  metadata?: Record<string, unknown>;
+};
+
+/** Result of creating a user in the auth provider */
+export type CreateUserResult = {
+  authProviderId: string;
+};
+
 /** User info as returned by the provider's userinfo endpoint or equivalent API */
 export type UserInfo = {
   id: string;

@@ -1,7 +1,17 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@config/config.service';
 import { AuthProviderInterface } from './auth-provider.interface';
-import { VerifyTokenResult, RefreshTokenResult, UserInfo, AuthUser } from '../types/auth.type';
+import {
+  VerifyTokenResult,
+  RefreshTokenResult,
+  UserInfo,
+  AuthUser,
+  CreateUserParams,
+  CreateUserResult,
+  UpdateUserParams,
+  LoginParams,
+  LoginResult,
+} from '../types/auth.type';
 
 /** Minimal WorkOS user shape covering only the fields we access */
 interface WorkOSUser {
@@ -28,6 +38,18 @@ interface WorkOSSDK {
       clientId: string;
     }): Promise<WorkOSRefreshResult>;
     getUser(userId: string): Promise<WorkOSUser>;
+    createUser(params: {
+      email: string;
+      password?: string;
+      firstName?: string;
+      lastName?: string;
+    }): Promise<WorkOSUser>;
+    deleteUser(userId: string): Promise<void>;
+    updateUser(params: {
+      userId: string;
+      firstName?: string;
+      lastName?: string;
+    }): Promise<WorkOSUser>;
   };
 }
 
@@ -37,9 +59,15 @@ export class WorkOSProvider implements AuthProviderInterface {
   private workos: WorkOSSDK | null = null;
 
   readonly supportsRefresh = true;
+  readonly supportsLogin = false;
   readonly supportsMfaClaims = true;
+  readonly supportsUserManagement = true;
 
   constructor(private readonly configService: ConfigService) {}
+
+  async login(_params: LoginParams): Promise<LoginResult> {
+    throw new NotImplementedException('Login is not supported by this provider');
+  }
 
   async verifyToken(token: string): Promise<VerifyTokenResult> {
     await this.ensureInitialized();
@@ -101,6 +129,35 @@ export class WorkOSProvider implements AuthProviderInterface {
       mfaEnabled: user.mfaEnabled ?? false,
       metadata: { raw: user },
     };
+  }
+
+  async createUser(params: CreateUserParams): Promise<CreateUserResult> {
+    await this.ensureInitialized();
+    const nameParts = params.name.split(' ');
+    const user = await this.workos!.userManagement.createUser({
+      email: params.email,
+      password: params.password,
+      firstName: nameParts[0],
+      lastName: nameParts.slice(1).join(' ') || undefined,
+    });
+    return { authProviderId: user.id };
+  }
+
+  async deleteUser(authProviderId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.workos!.userManagement.deleteUser(authProviderId);
+  }
+
+  async updateUser(authProviderId: string, params: UpdateUserParams): Promise<void> {
+    await this.ensureInitialized();
+    const update: Record<string, unknown> = { userId: authProviderId };
+    if (params.name) {
+      const parts = params.name.split(' ');
+      update.firstName = parts[0];
+      update.lastName = parts.slice(1).join(' ') || undefined;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+    await this.workos!.userManagement.updateUser(update as any);
   }
 
   private normalizeUser(payload: Record<string, unknown>): AuthUser {

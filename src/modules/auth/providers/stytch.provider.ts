@@ -1,7 +1,17 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@config/config.service';
 import { AuthProviderInterface } from './auth-provider.interface';
-import { VerifyTokenResult, RefreshTokenResult, UserInfo, AuthUser } from '../types/auth.type';
+import {
+  VerifyTokenResult,
+  RefreshTokenResult,
+  UserInfo,
+  AuthUser,
+  CreateUserParams,
+  CreateUserResult,
+  UpdateUserParams,
+  LoginParams,
+  LoginResult,
+} from '../types/auth.type';
 
 /** Authentication factor shape from Stytch session payload */
 interface StytchAuthFactor {
@@ -31,6 +41,15 @@ interface StytchSDK {
   };
   users: {
     get(params: { user_id: string }): Promise<{ user?: StytchUser } & Partial<StytchUser>>;
+    create(params: {
+      email: string;
+      name?: { first_name?: string; last_name?: string };
+    }): Promise<{ user_id: string }>;
+    delete(params: { user_id: string }): Promise<void>;
+    update(params: {
+      user_id: string;
+      name?: { first_name?: string; last_name?: string };
+    }): Promise<void>;
   };
 }
 
@@ -40,9 +59,15 @@ export class StytchProvider implements AuthProviderInterface {
   private stytchClient: StytchSDK | null = null;
 
   readonly supportsRefresh = true;
+  readonly supportsLogin = false;
   readonly supportsMfaClaims = true;
+  readonly supportsUserManagement = true;
 
   constructor(private readonly configService: ConfigService) {}
+
+  async login(_params: LoginParams): Promise<LoginResult> {
+    throw new NotImplementedException('Login is not supported by this provider');
+  }
 
   async verifyToken(token: string): Promise<VerifyTokenResult> {
     await this.ensureInitialized();
@@ -107,6 +132,32 @@ export class StytchProvider implements AuthProviderInterface {
       mfaEnabled: (user.totps?.length ?? 0) > 0 || (user.phone_numbers?.length ?? 0) > 0,
       metadata: { raw: user },
     };
+  }
+
+  async createUser(params: CreateUserParams): Promise<CreateUserResult> {
+    await this.ensureInitialized();
+    const nameParts = params.name.split(' ');
+    const result = await this.stytchClient!.users.create({
+      email: params.email,
+      name: { first_name: nameParts[0], last_name: nameParts.slice(1).join(' ') || undefined },
+    });
+    return { authProviderId: result.user_id };
+  }
+
+  async deleteUser(authProviderId: string): Promise<void> {
+    await this.ensureInitialized();
+    await this.stytchClient!.users.delete({ user_id: authProviderId });
+  }
+
+  async updateUser(authProviderId: string, params: UpdateUserParams): Promise<void> {
+    await this.ensureInitialized();
+    const update: Record<string, unknown> = { user_id: authProviderId };
+    if (params.name) {
+      const parts = params.name.split(' ');
+      update.name = { first_name: parts[0], last_name: parts.slice(1).join(' ') || undefined };
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+    await this.stytchClient!.users.update(update as any);
   }
 
   private normalizeUser(payload: Record<string, unknown>): AuthUser {

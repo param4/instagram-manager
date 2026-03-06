@@ -1,4 +1,13 @@
-import { VerifyTokenResult, RefreshTokenResult, UserInfo } from '../types/auth.type';
+import {
+  VerifyTokenResult,
+  RefreshTokenResult,
+  UserInfo,
+  CreateUserParams,
+  CreateUserResult,
+  UpdateUserParams,
+  LoginParams,
+  LoginResult,
+} from '../types/auth.type';
 
 /**
  * Common interface for all authentication providers.
@@ -25,11 +34,42 @@ export interface AuthProviderInterface {
    */
   getUserInfo(userId: string, accessToken: string): Promise<UserInfo>;
 
+  /**
+   * Creates a user in the auth provider.
+   * @throws NotImplementedException if the provider doesn't support user management
+   */
+  createUser(params: CreateUserParams): Promise<CreateUserResult>;
+
+  /**
+   * Deletes a user from the auth provider.
+   * @throws NotImplementedException if the provider doesn't support user management
+   */
+  deleteUser(authProviderId: string): Promise<void>;
+
+  /**
+   * Updates a user in the auth provider.
+   * @throws NotImplementedException if the provider doesn't support user management
+   */
+  updateUser(authProviderId: string, params: UpdateUserParams): Promise<void>;
+
+  /**
+   * Authenticates a user with identifier (email/username) and password.
+   * Returns a session token.
+   * @throws NotImplementedException if the provider doesn't support login
+   */
+  login(params: LoginParams): Promise<LoginResult>;
+
   /** Whether this provider supports server-side token refresh */
   readonly supportsRefresh: boolean;
 
   /** Whether this provider includes MFA status in its JWT claims */
   readonly supportsMfaClaims: boolean;
+
+  /** Whether this provider supports server-side user management */
+  readonly supportsUserManagement: boolean;
+
+  /** Whether this provider supports server-side login */
+  readonly supportsLogin: boolean;
 }
 
 /** Injection token for the auth provider */

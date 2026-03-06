@@ -21,7 +21,8 @@
     "doc": "compodoc -c .compodocrc.json",
     "doc:serve": "compodoc -c .compodocrc.json -s -o",
     "doc:coverage": "compodoc -c .compodocrc.json --coverageTest 80 --coverageTestThresholdFail true",
-    "prebuild": "compodoc -c .compodocrc.json"
+    "prebuild": "compodoc -c .compodocrc.json",
+    "create:admin": "ts-node -r tsconfig-paths/register src/cli/create-admin.ts"
   },
   "dependencies": {
     "@clerk/backend": "^2.33.0",

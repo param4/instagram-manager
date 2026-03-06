@@ -1,6 +1,7 @@
 import { Controller, Post, Get, Body, HttpStatus, HttpCode, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
+import { LoginModel } from '../models/login.model';
 import { RefreshTokenModel } from '../models/refresh-token.model';
 import { TokenResponseModel } from '../models/token-response.model';
 import { UserInfoResponseModel } from '../models/user-info-response.model';
@@ -20,6 +21,27 @@ import { AuthUser } from '../types/auth.type';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  /** Authenticates a user with email/username and password, returns a session token */
+  @Post('login')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with email/username and password' })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async login(@Body() dto: LoginModel): Promise<AppApiResponse<{ token: string; userId: string; expiresAt: number }>> {
+    const result = await this.authService.login(dto);
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Login successful',
+      data: {
+        token: result.token,
+        userId: result.userId,
+        expiresAt: result.expiresAt,
+      },
+    };
+  }
 
   /**
    * Refreshes an access token using a refresh token.
