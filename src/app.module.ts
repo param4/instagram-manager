@@ -15,6 +15,8 @@ import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 import { InstagramModule } from './modules/instagram/instagram.module';
 import { YouTubeModule } from './modules/youtube/youtube.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { EmailModule } from './modules/email/email.module';
+import { SmsModule } from './modules/sms/sms.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { StorageModule } from './modules/storage/storage.module';
     // --- Add new feature modules below this line ---
     InstagramModule,
     YouTubeModule,
+    EmailModule,
+    SmsModule,
   ],
 })
 export class AppModule {}

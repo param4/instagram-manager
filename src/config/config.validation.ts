@@ -14,6 +14,17 @@ enum StorageProviderEnum {
   S3 = 's3',
 }
 
+enum EmailProviderEnum {
+  SENDGRID = 'sendgrid',
+  SES = 'ses',
+  SMTP = 'smtp',
+}
+
+enum SmsProviderEnum {
+  TWILIO = 'twilio',
+  SNS = 'sns',
+}
+
 enum Environment {
   Development = 'development',
   Production = 'production',
@@ -182,6 +193,87 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   S3_PUBLIC_URL: string = '';
+
+  // ── Email ─────────────────────────────────────────────────────────
+
+  @IsEnum(EmailProviderEnum)
+  @IsOptional()
+  EMAIL_PROVIDER: EmailProviderEnum;
+
+  @ValidateIf((o: EnvironmentVariables) => !!o.EMAIL_PROVIDER)
+  @IsString()
+  EMAIL_FROM: string;
+
+  // SendGrid
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SENDGRID)
+  @IsString()
+  SENDGRID_API_KEY: string;
+
+  // AWS SES
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SES)
+  @IsString()
+  SES_REGION: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SES)
+  @IsString()
+  SES_ACCESS_KEY_ID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SES)
+  @IsString()
+  SES_SECRET_ACCESS_KEY: string;
+
+  // SMTP
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SMTP)
+  @IsString()
+  SMTP_HOST: string;
+
+  @IsNumber()
+  @IsOptional()
+  SMTP_PORT: number = 587;
+
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SMTP)
+  @IsString()
+  SMTP_USER: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.EMAIL_PROVIDER === EmailProviderEnum.SMTP)
+  @IsString()
+  SMTP_PASS: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_SECURE: string = 'false';
+
+  // ── SMS ───────────────────────────────────────────────────────────
+
+  @IsEnum(SmsProviderEnum)
+  @IsOptional()
+  SMS_PROVIDER: SmsProviderEnum;
+
+  @ValidateIf((o: EnvironmentVariables) => !!o.SMS_PROVIDER)
+  @IsString()
+  SMS_FROM: string;
+
+  // Twilio
+  @ValidateIf((o: EnvironmentVariables) => o.SMS_PROVIDER === SmsProviderEnum.TWILIO)
+  @IsString()
+  TWILIO_ACCOUNT_SID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.SMS_PROVIDER === SmsProviderEnum.TWILIO)
+  @IsString()
+  TWILIO_AUTH_TOKEN: string;
+
+  // AWS SNS
+  @ValidateIf((o: EnvironmentVariables) => o.SMS_PROVIDER === SmsProviderEnum.SNS)
+  @IsString()
+  SNS_REGION: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.SMS_PROVIDER === SmsProviderEnum.SNS)
+  @IsString()
+  SNS_ACCESS_KEY_ID: string;
+
+  @ValidateIf((o: EnvironmentVariables) => o.SMS_PROVIDER === SmsProviderEnum.SNS)
+  @IsString()
+  SNS_SECRET_ACCESS_KEY: string;
 }
 
 export function validate(config: Record<string, unknown>) {

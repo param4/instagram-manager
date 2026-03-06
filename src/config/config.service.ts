@@ -189,4 +189,85 @@ export class ConfigService {
   get s3PublicUrl(): string {
     return this.configService.get<string>('S3_PUBLIC_URL', '');
   }
+
+  // ── Email ──────────────────────────────────────────────────────────
+
+  get emailProvider(): string {
+    return this.configService.get<string>('EMAIL_PROVIDER', '');
+  }
+
+  get emailFrom(): string {
+    return this.configService.get<string>('EMAIL_FROM', '');
+  }
+
+  // SendGrid
+  get sendgridApiKey(): string {
+    return this.configService.get<string>('SENDGRID_API_KEY', '');
+  }
+
+  // AWS SES
+  get sesRegion(): string {
+    return this.configService.get<string>('SES_REGION', '');
+  }
+
+  get sesAccessKeyId(): string {
+    return this.configService.get<string>('SES_ACCESS_KEY_ID', '');
+  }
+
+  get sesSecretAccessKey(): string {
+    return this.configService.get<string>('SES_SECRET_ACCESS_KEY', '');
+  }
+
+  // SMTP
+  get smtpHost(): string {
+    return this.configService.get<string>('SMTP_HOST', '');
+  }
+
+  get smtpPort(): number {
+    return this.configService.get<number>('SMTP_PORT', 587);
+  }
+
+  get smtpUser(): string {
+    return this.configService.get<string>('SMTP_USER', '');
+  }
+
+  get smtpPass(): string {
+    return this.configService.get<string>('SMTP_PASS', '');
+  }
+
+  get smtpSecure(): boolean {
+    return this.configService.get<string>('SMTP_SECURE', 'false') === 'true';
+  }
+
+  // ── SMS ────────────────────────────────────────────────────────────
+
+  get smsProvider(): string {
+    return this.configService.get<string>('SMS_PROVIDER', '');
+  }
+
+  get smsFrom(): string {
+    return this.configService.get<string>('SMS_FROM', '');
+  }
+
+  // Twilio
+  get twilioAccountSid(): string {
+    return this.configService.get<string>('TWILIO_ACCOUNT_SID', '');
+  }
+
+  get twilioAuthToken(): string {
+    return this.configService.get<string>('TWILIO_AUTH_TOKEN', '');
+  }
+
+  // AWS SNS
+  get snsRegion(): string {
+    return this.configService.get<string>('SNS_REGION', '');
+  }
+
+  get snsAccessKeyId(): string {
+    return this.configService.get<string>('SNS_ACCESS_KEY_ID', '');
+  }
+
+  get snsSecretAccessKey(): string {
+    return this.configService.get<string>('SNS_SECRET_ACCESS_KEY', '');
+  }
 }
