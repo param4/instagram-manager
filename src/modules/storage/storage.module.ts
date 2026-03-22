@@ -2,9 +2,11 @@ import { Module, Global } from '@nestjs/common';
 import { StorageProviderFactory } from './providers/storage-provider.factory';
 import { STORAGE_PROVIDER_TOKEN } from './providers/storage-provider.interface';
 import { StorageService } from './services/storage.service';
+import { StorageController } from './controllers/storage.controller';
 
 @Global()
 @Module({
+  controllers: [StorageController],
   providers: [
     StorageProviderFactory,
     {

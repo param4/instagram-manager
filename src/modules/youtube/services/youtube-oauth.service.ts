@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { google } from 'googleapis';
+import { youtube, auth as googleAuth } from '@googleapis/youtube';
 import { ConfigService } from '@config/config.service';
 import { YouTubeAccount } from '../entities/youtube-account.entity';
 import { YouTubeChannelProfile } from '../types/youtube.type';
@@ -20,14 +20,14 @@ import { YouTubeChannelProfile } from '../types/youtube.type';
 @Injectable()
 export class YouTubeOAuthService {
   private readonly logger = new Logger(YouTubeOAuthService.name);
-  private readonly oauth2Client: InstanceType<typeof google.auth.OAuth2>;
+  private readonly oauth2Client: InstanceType<typeof googleAuth.OAuth2>;
 
   constructor(
     private readonly config: ConfigService,
     @InjectRepository(YouTubeAccount)
     private readonly accountRepo: Repository<YouTubeAccount>,
   ) {
-    this.oauth2Client = new google.auth.OAuth2(
+    this.oauth2Client = new googleAuth.OAuth2(
       config.ytClientId,
       config.ytClientSecret,
       config.ytRedirectUri,
@@ -110,11 +110,11 @@ export class YouTubeOAuthService {
    * @returns The user's YouTube channel profile data
    */
   async getChannelProfile(accessToken: string): Promise<YouTubeChannelProfile> {
-    const client = new google.auth.OAuth2();
+    const client = new googleAuth.OAuth2();
     client.setCredentials({ access_token: accessToken });
 
-    const youtube = google.youtube({ version: 'v3', auth: client });
-    const response = await youtube.channels.list({
+    const yt = youtube({ version: 'v3', auth: client });
+    const response = await yt.channels.list({
       part: ['snippet'],
       mine: true,
     });

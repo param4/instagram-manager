@@ -40,8 +40,8 @@ import { SmsModule } from './modules/sms/sms.module';
     // --- Add new feature modules below this line ---
     InstagramModule,
     YouTubeModule,
-    EmailModule,
-    SmsModule,
+    // EmailModule,
+    // SmsModule,
   ],
 })
 export class AppModule {}

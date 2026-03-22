@@ -169,12 +169,19 @@ export class ClerkProvider implements AuthProviderInterface {
     }
 
     // Verify password via Clerk Backend API
-    const verified = await this.clerkClient!.users.verifyPassword({
-      userId: user.id,
-      password: params.password,
-    });
+    try {
+      const verified = await this.clerkClient!.users.verifyPassword({
+        userId: user.id,
+        password: params.password,
+      });
 
-    if (!verified?.verified) {
+      if (!verified?.verified) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid credentials');
     }
 

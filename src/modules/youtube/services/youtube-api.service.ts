@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Readable } from 'stream';
-import { google } from 'googleapis';
+import { youtube, auth as googleAuth } from '@googleapis/youtube';
 import { VideoInsertResponse, VideoStatusResponse } from '../types/youtube.type';
 
 /**
@@ -43,10 +43,10 @@ export class YouTubeApiService {
     privacyStatus: string,
     isShort: boolean,
   ): Promise<VideoInsertResponse> {
-    const client = new google.auth.OAuth2();
+    const client = new googleAuth.OAuth2();
     client.setCredentials({ access_token: accessToken });
 
-    const youtube = google.youtube({ version: 'v3', auth: client });
+    const yt = youtube({ version: 'v3', auth: client });
 
     const videoStream = await this.streamFromUrl(videoUrl);
 
@@ -55,7 +55,7 @@ export class YouTubeApiService {
       finalDescription = `#Shorts ${finalDescription}`.trim();
     }
 
-    const response = await youtube.videos.insert({
+    const response = await yt.videos.insert({
       part: ['snippet', 'status'],
       requestBody: {
         snippet: {
@@ -102,12 +102,12 @@ export class YouTubeApiService {
    * @returns The video's current processing status
    */
   async getVideoStatus(accessToken: string, videoId: string): Promise<VideoStatusResponse> {
-    const client = new google.auth.OAuth2();
+    const client = new googleAuth.OAuth2();
     client.setCredentials({ access_token: accessToken });
 
-    const youtube = google.youtube({ version: 'v3', auth: client });
+    const yt = youtube({ version: 'v3', auth: client });
 
-    const response = await youtube.videos.list({
+    const response = await yt.videos.list({
       part: ['status'],
       id: [videoId],
     });
@@ -140,14 +140,14 @@ export class YouTubeApiService {
    * @param thumbnailUrl - Publicly accessible URL of the thumbnail image
    */
   async setThumbnail(accessToken: string, videoId: string, thumbnailUrl: string): Promise<void> {
-    const client = new google.auth.OAuth2();
+    const client = new googleAuth.OAuth2();
     client.setCredentials({ access_token: accessToken });
 
-    const youtube = google.youtube({ version: 'v3', auth: client });
+    const yt = youtube({ version: 'v3', auth: client });
 
     const imageStream = await this.streamFromUrl(thumbnailUrl);
 
-    await youtube.thumbnails.set({
+    await yt.thumbnails.set({
       videoId,
       media: {
         body: imageStream,
