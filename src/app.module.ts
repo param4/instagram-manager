@@ -17,6 +17,7 @@ import { YouTubeModule } from './modules/youtube/youtube.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { EmailModule } from './modules/email/email.module';
 import { SmsModule } from './modules/sms/sms.module';
+import { BundleModule } from './modules/bundle/bundle.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SmsModule } from './modules/sms/sms.module';
     // --- Add new feature modules below this line ---
     InstagramModule,
     YouTubeModule,
+    BundleModule,
     // EmailModule,
     // SmsModule,
   ],

@@ -74,15 +74,13 @@ export class UsersService {
       } catch (error) {
         const messages: string[] = [];
         if (error && typeof error === 'object' && 'errors' in error) {
-          for (const e of (error as any).errors) {
+          for (const e of error.errors) {
             messages.push(e.longMessage || e.message || e.code);
           }
         } else {
           messages.push(error instanceof Error ? error.message : String(error));
         }
-        throw new ConflictException(
-          `Auth provider rejected user creation: ${messages.join('; ')}`,
-        );
+        throw new ConflictException(`Auth provider rejected user creation: ${messages.join('; ')}`);
       }
 
       // Create local user

@@ -64,9 +64,7 @@ export class AuthService {
   /** Authenticates a user with identifier and password */
   async login(params: LoginParams): Promise<LoginResult> {
     if (!this.authProvider.supportsLogin) {
-      throw new NotImplementedException(
-        'Login is not supported by the current auth provider',
-      );
+      throw new NotImplementedException('Login is not supported by the current auth provider');
     }
     return this.authProvider.login(params);
   }

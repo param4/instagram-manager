@@ -70,7 +70,7 @@ export class BusinessService {
       } catch (error) {
         const messages: string[] = [];
         if (error && typeof error === 'object' && 'errors' in error) {
-          for (const e of (error as any).errors) {
+          for (const e of error.errors) {
             messages.push(e.longMessage || e.message || e.code);
           }
         } else {

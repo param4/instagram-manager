@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Delete,
-  Body,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Delete, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { StorageService } from '../services/storage.service';
 import { SignedUploadUrlModel } from '../models/signed-upload-url.model';

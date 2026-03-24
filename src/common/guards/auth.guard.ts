@@ -100,8 +100,17 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private async enrichFromLocalDb(user: { id: string; orgId: string | null; roles: string[]; metadata: Record<string, unknown> }): Promise<void> {
-    const rows: Array<{ business_id: string | null; is_super_admin: boolean; role_name: string | null }> = await this.dataSource.query(
+  private async enrichFromLocalDb(user: {
+    id: string;
+    orgId: string | null;
+    roles: string[];
+    metadata: Record<string, unknown>;
+  }): Promise<void> {
+    const rows: Array<{
+      business_id: string | null;
+      is_super_admin: boolean;
+      role_name: string | null;
+    }> = await this.dataSource.query(
       `SELECT u.business_id, u.is_super_admin, r.name AS role_name
        FROM users u
        LEFT JOIN user_roles ur ON ur.user_id = u.id
@@ -115,9 +124,7 @@ export class AuthGuard implements CanActivate {
 
     user.orgId = rows[0].business_id;
     user.metadata = { ...user.metadata, isSuperAdmin: rows[0].is_super_admin };
-    user.roles = rows
-      .map((r) => r.role_name)
-      .filter((name): name is string => name !== null);
+    user.roles = rows.map((r) => r.role_name).filter((name): name is string => name !== null);
   }
 
   private extractTokenFromHeader(request: Request): string | null {

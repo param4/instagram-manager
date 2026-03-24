@@ -60,7 +60,9 @@ async function bootstrap() {
     }
 
     // Collect optional fields for auth provider
-    const username = await rl.question('Username (required by some providers, leave empty to skip): ');
+    const username = await rl.question(
+      'Username (required by some providers, leave empty to skip): ',
+    );
 
     // Retry loop for auth provider user creation
     let authProviderId: string | null = null;
@@ -79,7 +81,7 @@ async function bootstrap() {
       } catch (error) {
         const messages: string[] = [];
         if (error && typeof error === 'object' && 'errors' in error) {
-          for (const e of (error as any).errors) {
+          for (const e of error.errors) {
             messages.push(e.longMessage || e.message || e.code);
           }
         } else {

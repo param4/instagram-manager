@@ -37,9 +37,7 @@ export class SmtpProvider implements EmailProviderInterface {
   }
 
   async sendBulk(params: SendBulkEmailParams): Promise<SendBulkEmailResult> {
-    const results = await Promise.all(
-      params.messages.map((msg) => this.send(msg)),
-    );
+    const results = await Promise.all(params.messages.map((msg) => this.send(msg)));
     return { results };
   }
 
@@ -62,9 +60,7 @@ export class SmtpProvider implements EmailProviderInterface {
       this.logger.log('SMTP email provider initialized');
       return this.transporter;
     } catch {
-      throw new Error(
-        'SMTP provider requires "nodemailer". Run: pnpm add nodemailer',
-      );
+      throw new Error('SMTP provider requires "nodemailer". Run: pnpm add nodemailer');
     }
   }
 }

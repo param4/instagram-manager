@@ -39,9 +39,7 @@ export class SendGridProvider implements EmailProviderInterface {
   }
 
   async sendBulk(params: SendBulkEmailParams): Promise<SendBulkEmailResult> {
-    const results = await Promise.all(
-      params.messages.map((msg) => this.send(msg)),
-    );
+    const results = await Promise.all(params.messages.map((msg) => this.send(msg)));
     return { results };
   }
 
@@ -55,9 +53,7 @@ export class SendGridProvider implements EmailProviderInterface {
       this.logger.log('SendGrid email provider initialized');
       return this.sgMail;
     } catch {
-      throw new Error(
-        'SendGrid provider requires "@sendgrid/mail". Run: pnpm add @sendgrid/mail',
-      );
+      throw new Error('SendGrid provider requires "@sendgrid/mail". Run: pnpm add @sendgrid/mail');
     }
   }
 }

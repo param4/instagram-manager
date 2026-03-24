@@ -41,9 +41,7 @@ export class TwilioProvider implements SmsProviderInterface {
       this.logger.log('Twilio SMS provider initialized');
       return this.client;
     } catch {
-      throw new Error(
-        'Twilio provider requires "twilio". Run: pnpm add twilio',
-      );
+      throw new Error('Twilio provider requires "twilio". Run: pnpm add twilio');
     }
   }
 }

@@ -1,8 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  SmsProviderInterface,
-  SMS_PROVIDER_TOKEN,
-} from '../providers/sms-provider.interface';
+import { SmsProviderInterface, SMS_PROVIDER_TOKEN } from '../providers/sms-provider.interface';
 import { SendSmsParams, SendSmsResult } from '../types/sms.type';
 
 @Injectable()

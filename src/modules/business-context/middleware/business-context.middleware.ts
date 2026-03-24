@@ -17,9 +17,8 @@ export class BusinessContextMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction): void {
     // Start with an empty store; the guard will populate it later
-    this.businessContextService.run(
-      { businessId: null, userId: '', isSuperAdmin: false },
-      () => next(),
+    this.businessContextService.run({ businessId: null, userId: '', isSuperAdmin: false }, () =>
+      next(),
     );
   }
 }

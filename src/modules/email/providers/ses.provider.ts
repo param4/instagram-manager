@@ -46,9 +46,7 @@ export class SesProvider implements EmailProviderInterface {
   }
 
   async sendBulk(params: SendBulkEmailParams): Promise<SendBulkEmailResult> {
-    const results = await Promise.all(
-      params.messages.map((msg) => this.send(msg)),
-    );
+    const results = await Promise.all(params.messages.map((msg) => this.send(msg)));
     return { results };
   }
 

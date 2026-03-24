@@ -98,7 +98,11 @@ export class ClerkProvider implements AuthProviderInterface {
         mfaVerified: false,
         metadata: { provider: 'clerk', tokenType: 'custom' },
       };
-      return { user, expiresAt: payload.exp, rawPayload: payload as unknown as Record<string, unknown> };
+      return {
+        user,
+        expiresAt: payload.exp,
+        rawPayload: payload as unknown as Record<string, unknown>,
+      };
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
     }
